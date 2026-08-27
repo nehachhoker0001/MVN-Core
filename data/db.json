@@ -1,0 +1,41 @@
+{
+  "centers": [
+    {
+      "id": "hc-1",
+      "name": "Health Centre A (Punjab)",
+      "name_translations": { "en": "Health Centre A (Punjab)", "hi": "स्वास्थ्य केंद्र A (पंजाब)", "bn": "স্বাস্থ্য কেন্দ্র A (পাঞ্জাব)", "te": "ఆరోగ్య కేంద్రం A (పంజాబ్)", "zh": "卫生中心 A（旁遮普）" },
+      "country": "IN",
+      "lat": 29.964,
+      "lng": 76.82,
+      "medicine": 1000,
+      "beds": 10,
+      "doctors": 3,
+      "patientsPerDay": 80
+    },
+    {
+      "id": "hc-2",
+      "name": "Health Centre B (Haryana)",
+      "name_translations": { "en": "Health Centre B (Haryana)", "hi": "स्वास्थ्य केंद्र B (हरियाणा)", "bn": "স্বাস্থ্য কেন্দ্র B (हरিয়ানা)", "te": "ఆరోగ్య కేంద్రం B (హర్యానా)", "zh": "卫生中心 B（哈里亚纳）" },
+      "country": "IN",
+      "lat": 29.152,
+      "lng": 76.834,
+      "medicine": 5000,
+      "beds": 25,
+      "doctors": 10,
+      "patientsPerDay": 60
+    },
+    {
+      "id": "hc-3",
+      "name": "Health Centre C (BRICS City)",
+      "name_translations": { "en": "Health Centre C (BRICS City)", "pt": "Centro de Saúde C (Cidade BRICS)", "ru": "Медицинский центр C (город BRICS)", "zh": "卫生中心 C（BRICS 城市）" },
+      "country": "BR",
+      "lat": -15.78,
+      "lng": -47.929,
+      "medicine": 3000,
+      "beds": 15,
+      "doctors": 5,
+      "patientsPerDay": 40
+    }
+  ],
+  "orders": []
+}

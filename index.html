@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BRICS Health Digital Twin Demo</title>
+  <style>
+    :root {
+      --bg: #f4f7f2;
+      --panel: #ffffff;
+      --primary: #0f766e;
+      --accent: #2563eb;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --border: #dfe5ea;
+      --good: #15803d;
+      --brics-green: #2e7d32;
+      --brics-blue: #2563eb;
+      --brics-gold: #fbbf24;
+      --brics-red: #dc2626;
+      --brics-teal: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 10% 15%, rgba(46,125,50,0.18), transparent 18%),
+        radial-gradient(circle at 78% 20%, rgba(37,99,235,0.18), transparent 22%),
+        radial-gradient(circle at 30% 80%, rgba(251,191,36,0.14), transparent 20%),
+        radial-gradient(circle at 82% 72%, rgba(220,38,38,0.14), transparent 20%),
+        linear-gradient(135deg, #f7fbf6 0%, #edf7ff 35%, #fefaf1 70%, #f5f7fb 100%);
+      color: var(--text);
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(120deg, rgba(15,118,110,0.04), transparent 30%, rgba(37,99,235,0.04) 55%, transparent 75%, rgba(46,125,50,0.04));
+      mix-blend-mode: multiply;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      width: 100%;
+      background: linear-gradient(90deg, var(--brics-teal), var(--brics-blue), var(--brics-gold), var(--brics-red));
+      color: white; padding: 18px 20px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+    h1 { margin: 0; font-size: clamp(1.6rem, 2vw, 2.4rem); color: white; }
+    .container { max-width: 1300px; margin: 0 auto; padding: 20px; }
+    .app-shell {
+      display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: start;
+      width: min(100%, 1300px);
+    }
+    .sidebar {
+      position: sticky; top: 16px; background: rgba(15,118,110,0.08); border: 1px solid rgba(148,163,184,0.18); border-radius: 18px; padding: 14px; box-shadow: 0 10px 25px rgba(15,23,42,0.05);
+      max-width: 100%;
+    }
+    .sidebar .brand {
+      display: flex; align-items: center; gap: 10px; font-weight: 700; margin-bottom: 16px; color: var(--text);
+    }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 12px; background: linear-gradient(135deg, var(--brics-green), var(--brics-blue)); display: grid; place-items: center; color: white; font-weight: 700;
+    }
+    .side-nav { display: grid; gap: 8px; }
+    .side-nav button {
+      text-align: left; padding: 10px 12px; border-radius: 999px; background: rgba(255,255,255,0.65); color: var(--text); border: 1px solid rgba(148,163,184,0.12); font-weight: 700; width: 100%;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.02);
+    }
+    .side-nav button.active {
+      background: linear-gradient(135deg, rgba(15,118,110,0.12), rgba(37,99,235,0.10)); border-color: rgba(15,118,110,0.18); color: var(--primary);
+    }
+    .mini-panel {
+      margin-top: 18px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.7); border: 1px solid rgba(148,163,184,0.12);
+    }
+    .main-panel { display: grid; gap: 0; }
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .toolbar-left {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .nav-pills {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .section-panel[hidden] {
+      display: none !important;
+    }
+    .nav-pills span {
+      display: inline-flex; align-items: center; justify-content: center; min-width: 110px; padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,0.78); border: 1px solid rgba(148,163,184,0.22); color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(15,23,42,0.04);
+      transition: all 0.2s ease;
+    }
+    .section-panel[hidden] {
+      display: none !important;
+    }
+    .nav-pills span.active,
+    .side-nav button.active {
+      background: linear-gradient(135deg, rgba(15,118,110,0.12), rgba(37,99,235,0.10));
+      border-color: rgba(15,118,110,0.22);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .quick-actions {
+      display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 18px;
+    }
+    .action-pill {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.2); background: rgba(255,255,255,0.74); color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    }
+    .action-pill.primary { background: linear-gradient(135deg, var(--brics-green), var(--brics-teal)); color: white; }
+    .action-pill.blue { background: linear-gradient(135deg, var(--brics-blue), #1d4ed8); color: white; }
+    .action-pill.gold { background: linear-gradient(135deg, var(--brics-gold), #f59e0b); color: #1f2937; }
+    .ai-panel {
+      display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; margin-bottom: 18px;
+    }
+    .prompt-box {
+      background: linear-gradient(135deg, rgba(15,118,110,0.08), rgba(37,99,235,0.08), rgba(251,191,36,0.08));
+      border: 1px solid rgba(148,163,184,0.18); border-radius: 16px; padding: 14px;
+    }
+    .ai-chip {
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,0.88); border: 1px solid rgba(148,163,184,0.18); font-size: 11px; font-weight: 700; color: var(--primary);
+    }
+    .prompt-box h3 { margin: 12px 0 8px; }
+    .prompt-box p {
+      margin: 0 0 12px; color: var(--muted); line-height: 1.5;
+    }
+    .suggestions {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+    }
+    .suggestions span {
+      display: inline-flex; align-items: center; padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,0.7); border: 1px solid rgba(148,163,184,0.14); font-size: 11px; font-weight: 700;
+    }
+    .intel-grid {
+      display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; margin: 0 0 18px;
+    }
+    .chat-card, .route-card {
+      background: linear-gradient(135deg, rgba(15,118,110,0.06), rgba(37,99,235,0.05));
+      border: 1px solid rgba(148,163,184,0.18); border-radius: 16px; padding: 16px;
+    }
+    .chat-box {
+      margin-top: 12px; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.8); border: 1px solid rgba(148,163,184,0.18); font-weight: 700; line-height: 1.5;
+    }
+    .chat-thread {
+      display: grid; gap: 10px; margin-top: 12px;
+    }
+    .chat-bubble {
+      padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5;
+      max-width: 85%;
+    }
+    .chat-bubble.user {
+      margin-left: auto; background: linear-gradient(135deg, var(--brics-blue), #1d4ed8); color: white;
+    }
+    .chat-bubble.ai {
+      background: rgba(255,255,255,0.82); border: 1px solid rgba(148,163,184,0.12); color: var(--text);
+    }
+    .map-pills {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+    }
+    .map-pills span {
+      display: inline-flex; align-items: center; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,0.8); border: 1px solid rgba(148,163,184,0.14); font-size: 11px; font-weight: 700; color: var(--primary);
+    }
+    .route-map {
+      position: relative; height: 140px; margin-top: 14px; border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(148,163,184,0.14)); border: 1px solid rgba(148,163,184,0.18); overflow: hidden;
+    }
+    .route-map::before {
+      content: ""; position: absolute; inset: 18px 18px 18px 18px; border-radius: 20px; border: 2px dashed rgba(37,99,235,0.24);
+    }
+    .route-line {
+      position: absolute; left: 18%; top: 36%; width: 58%; height: 2px; background: linear-gradient(90deg, var(--brics-green), var(--brics-blue), var(--brics-gold)); transform: rotate(8deg); border-radius: 999px;
+    }
+    .route-line::after {
+      content: ""; position: absolute; right: -4px; top: -3px; width: 8px; height: 8px; background: var(--brics-red); border-radius: 50%;
+    }
+    .route-node {
+      position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--brics-teal); box-shadow: 0 0 0 6px rgba(15,118,110,0.14); 
+    }
+    .route-node:nth-child(1) { left: 18%; top: 34%; }
+    .route-node:nth-child(2) { left: 62%; top: 46%; background: var(--brics-blue); }
+    .route-node:nth-child(3) { left: 74%; top: 28%; background: var(--brics-gold); }
+    .trend-list {
+      list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px;
+    }
+    .trend-list li {
+      display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; background: rgba(255,255,255,0.64); border-radius: 10px; border: 1px solid rgba(148,163,184,0.12); font-size: 12px; color: var(--muted);
+    }
+    .feature-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 0 0 18px;
+    }
+    .feature-tile {
+      border: 1px solid rgba(148,163,184,0.18); border-radius: 20px; background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(248,250,252,0.9)); padding: 16px; min-height: 140px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; position: relative; box-shadow: 0 12px 25px rgba(15, 23, 42, 0.06);
+    }
+    .feature-tile::before {
+      content: "";
+      position: absolute;
+      inset: auto -20px -30px auto;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.22);
+    }
+    .feature-tile .tile-top {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      position: relative; z-index: 1;
+    }
+    .feature-icon {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; background: rgba(255,255,255,0.8); box-shadow: inset 0 0 0 1px rgba(148,163,184,0.12);
+    }
+    .feature-tile strong {
+      font-size: 1.08rem; position: relative; z-index: 1;
+    }
+    .feature-tile small {
+      color: var(--muted); position: relative; z-index: 1; line-height: 1.5;
+    }
+    .tile-forecast { background: linear-gradient(135deg, rgba(21,128,61,0.12), rgba(34,197,94,0.08)); }
+    .tile-alerts { background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08)); }
+    .tile-dispatch { background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(59,130,246,0.08)); }
+    .tile-action { background: linear-gradient(135deg, rgba(15,118,110,0.12), rgba(20,184,166,0.08)); }
+    .info-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(248,250,252,0.94)); border: 1px solid rgba(148,163,184,0.18); border-radius: 18px; padding: 16px; box-shadow: 0 10px 22px rgba(15,23,42,0.04);
+    }
+    .info-card h3, .info-card h2 {
+      margin: 0 0 12px;
+    }
+    .info-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .info-icon {
+      width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-size: 18px; background: rgba(255,255,255,0.9); box-shadow: inset 0 0 0 1px rgba(148,163,184,0.12);
+    }
+    .metric-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(239,246,255,0.9));
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 18px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 120px;
+      height: 120px;
+      background: rgba(59,130,246,0.06);
+      border-radius: 50%;
+      transform: translate(-26px, -34px);
+    }
+    .metric-card > * { position: relative; z-index: 1; }
+    .status-box {
+      border: 1px solid rgba(148,163,184,0.18); border-radius: 14px; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(248,250,252,0.9)); padding: 12px;
+    }
+    .facility-item, .recommend-item, .alert-item {
+      background: linear-gradient(135deg, rgba(255,255,255,0.78), rgba(240,249,255,0.85)); border: 1px solid rgba(148,163,184,0.14); border-radius: 14px; padding: 12px; box-shadow: 0 8px 18px rgba(15,23,42,0.03);
+    }
+    .h-scroll-panel {
+      width: 100%;
+      overflow: visible;
+      padding-bottom: 0;
+    }
+    .h-scroll-track {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+    .h-scroll-card {
+      width: 100%;
+      min-height: 140px;
+      background: rgba(255,255,255,0.76);
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .feature-tile strong { font-size: 1.1rem; }
+    .feature-tile small { color: var(--muted); }
+    select, input, button {
+      border: 1px solid rgba(148,163,184,0.28); border-radius: 10px; padding: 10px 12px; font-size: 14px;
+    }
+    select {
+      min-width: 170px;
+      background: rgba(255,255,255,0.96);
+      font-size: 14px;
+    }
+    button {
+      background: linear-gradient(135deg, var(--brics-green), var(--brics-teal)); color: white; border: none; cursor: pointer; font-weight: 700; letter-spacing: 0.01em;
+      box-shadow: 0 6px 14px rgba(15,118,110,0.18);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(15,118,110,0.22); }
+    button.secondary { background: linear-gradient(135deg, var(--brics-blue), #1d4ed8); }
+    button.warning { background: linear-gradient(135deg, var(--brics-gold), #f59e0b); color: #1f2937; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: rgba(255,255,255,0.78);
+      backdrop-filter: blur(3px);
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    }
+    .hero {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(46,125,50,0.12), rgba(37,99,235,0.10), rgba(251,191,36,0.12));
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .eyebrow {
+      margin: 0 0 8px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 700;
+    }
+    .hero h2 {
+      margin: 0; font-size: clamp(1.5rem, 2vw, 2.2rem);
+    }
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 10px; width: min(420px, 100%);
+    }
+    .hero-stat {
+      background: rgba(255,255,255,0.7); border: 1px solid rgba(37,99,235,0.12); border-radius: 10px; padding: 12px;
+    }
+    .hero-stat span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .hero-stat strong { font-size: 1.1rem; }
+    .signal-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;
+    }
+    .mini-chart {
+      display: flex; height: 90px; align-items: end; gap: 8px; margin-top: 14px;
+    }
+    .mini-chart span {
+      display: block; flex: 1; background: linear-gradient(180deg, var(--brics-gold), var(--brics-blue)); border-radius: 8px 8px 0 0; min-height: 20%;
+    }
+    .status-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px;
+    }
+    .status-box {
+      border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; padding: 12px;
+    }
+    .status-box strong { display: block; font-size: 1.1rem; margin-top: 6px; }
+    .metric-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .metric-value { font-size: clamp(1.5rem, 2vw, 2.2rem); font-weight: 700; margin-top: 8px; }
+    .badge {
+      display: inline-block; margin-top: 8px; padding: 6px 10px; background: linear-gradient(135deg, rgba(21,128,61,0.12), rgba(34,197,94,0.10)); color: var(--good); border-radius: 999px; font-size: 12px; font-weight: 700;
+    }
+    .badge.warn { background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.08)); color: var(--warning); }
+    .badge.danger { background: linear-gradient(135deg, rgba(220,38,38,0.12), rgba(239,68,68,0.08)); color: var(--danger); }
+    .facility-list, .recommend-list, .alerts-list { display: grid; gap: 12px; }
+    .facility-item, .recommend-item, .alert-item {
+      background: rgba(255,255,255,0.7); border: 1px solid rgba(148,163,184,0.14); border-radius: 12px; padding: 12px;
+    }
+    .facility-item strong, .recommend-item strong { display: block; margin-bottom: 6px; }
+    .facility-item, .recommend-item, .alert-item {
+      min-height: 82px;
+    }
+    .small { color: var(--muted); font-size: 12px; }
+    .status-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .slider-wrap { margin-top: 12px; }
+    .slider-wrap input { width: 100%; }
+    .muted { color: var(--muted); }
+    .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+    .panel-link {
+      display: inline-flex; align-items: center; justify-content: center; margin-top: 10px; padding: 8px 12px; border-radius: 10px; background: rgba(37,99,235,0.08); color: var(--accent); font-size: 12px; font-weight: 700; border: 1px solid rgba(37,99,235,0.12);
+    }
+    @media (max-width: 980px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: static;
+      }
+    }
+    @media (max-width: 720px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .toolbar > * { width: 100%; }
+      .toolbar-left {
+        width: 100%;
+      }
+      .hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-stats {
+        width: 100%;
+        grid-template-columns: 1fr;
+      }
+      .ai-panel, .intel-grid {
+        grid-template-columns: 1fr;
+      }
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1 data-i18n="appTitle">BRICS Health Digital Twin Demo</h1>
+    </div>
+  </header>
+
+  <main class="container app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">B</div> <span data-i18n="brand">BRICS Care</span></div>
+      <div class="side-nav" aria-label="Sidebar navigation">
+        <button class="active" data-section="Overview" data-i18n="navOverview">Overview</button>
+        <button data-section="Clinical" data-i18n="navClinical">Clinical</button>
+        <button data-section="Logistics" data-i18n="navLogistics">Logistics</button>
+        <button data-section="Forecast" data-i18n="navForecast">Forecast</button>
+        <button data-section="Alerts" data-i18n="navAlerts">Alerts</button>
+      </div>
+      <div class="mini-panel">
+        <div class="small" data-i18n="northCorridor">North corridor</div>
+        <strong style="display:block;margin-top:6px;" data-i18n="priorityOne">Priority 1</strong>
+        <div class="small" style="margin-top:8px;" data-i18n="northCorridorText">Punjab and Haryana demand spike remains elevated.</div>
+      </div>
+    </aside>
+    <div class="main-panel">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="nav-pills" aria-label="Main navigation">
+            <span class="active" data-section="Overview" data-i18n="navOverview">Overview</span>
+            <span data-section="Clinical" data-i18n="navClinical">Clinical</span>
+            <span data-section="Logistics" data-i18n="navLogistics">Logistics</span>
+            <span data-section="Alerts" data-i18n="navAlerts">Alerts</span>
+          </div>
+        </div>
+        <div class="toolbar-left">
+          <select id="countrySelect" aria-label="Country"></select>
+          <select id="langSelect" aria-label="Language">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="bn">বাংলা (Bangla)</option>
+            <option value="pt">Português (Portuguese)</option>
+            <option value="ru">Русский (Russian)</option>
+            <option value="zh">中文 (Chinese)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="fr">Français (French)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="ar">العربية (Arabic)</option>
+          </select>
+          <button id="simulateBtn" class="secondary" data-i18n="runLiveSimulation">Run live simulation</button>
+          <button id="ambulanceBtn" class="warning" data-i18n="requestAmbulance">Request ambulance</button>
+        </div>
+      </div>
+
+    <section class="card hero section-panel" data-section="Overview">
+      <div>
+        <p class="eyebrow" data-i18n="heroEyebrow">BRICS Regional Health Command</p>
+        <h2 data-i18n="heroHeadline">Predict shortages before they reach the ward</h2>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span data-i18n="regionalRisk">Regional risk</span><strong data-i18n="riskLevel">Moderate</strong></div>
+        <div class="hero-stat"><span data-i18n="dispatchPlan">Dispatch plan</span><strong data-i18n="dispatchValue">2 ambulances</strong></div>
+        <div class="hero-stat"><span data-i18n="icuSignal">ICU signal</span><strong>+18%</strong></div>
+      </div>
+    </section>
+
+    <div class="quick-actions section-panel" data-section="Overview">
+      <button class="action-pill primary" data-i18n="navOverview">Overview</button>
+      <button class="action-pill blue" data-i18n="dispatchAction">Dispatch</button>
+      <button class="action-pill gold" data-i18n="forecastAction">Forecast</button>
+      <button class="action-pill" data-i18n="escalateAction">Escalate</button>
+    </div>
+
+    <div class="ai-panel section-panel" data-section="Overview">
+      <section class="prompt-box">
+        <div class="ai-chip" data-i18n="aiAssistantLive">AI Assistant • Live</div>
+        <h3 data-i18n="recommendedNextMove">Recommended next move</h3>
+        <p data-i18n="aiRecommendation">Reallocate 300 units of medicine from a low-risk center and pre-position an ICU-ready ambulance corridor toward Punjab.</p>
+        <div class="suggestions">
+          <span data-i18n="shortageRisk">Shortage risk</span>
+          <span data-i18n="ambulanceRoute">Ambulance route</span>
+          <span data-i18n="supplyTransfer">Supply transfer</span>
+        </div>
+      </section>
+      <section class="card">
+        <h3 data-i18n="aiReasoning">AI reasoning</h3>
+        <div class="status-grid">
+          <div class="status-box"><span class="small" data-i18n="confidence">Confidence</span><strong>91%</strong></div>
+          <div class="status-box"><span class="small" data-i18n="impact">Impact</span><strong data-i18n="highImpact">High</strong></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="intel-grid section-panel" data-section="Overview">
+      <section class="chat-card">
+        <div class="ai-chip" data-i18n="aiCopilotActive">AI Copilot • Active</div>
+        <h3 data-i18n="whatNext">What should I do next?</h3>
+        <div class="chat-thread">
+          <div class="chat-bubble user" data-i18n="chatUserMessage">"We may face a medicine shortage in Punjab in 6 hours."</div>
+          <div class="chat-bubble ai" data-i18n="chatAiMessage">I recommend moving 300 units from BRICS City and activating a priority ambulance corridor.</div>
+        </div>
+        <div class="map-pills"><span data-i18n="reallocateAction">Reallocate</span><span data-i18n="routeAction">Route</span><span data-i18n="prioritizeAction">Prioritize</span></div>
+      </section>
+      <section class="route-card">
+        <h3 data-i18n="routeIntelligence">Route intelligence</h3>
+        <div class="route-map">
+          <div class="route-line"></div>
+          <div class="route-node"></div>
+          <div class="route-node"></div>
+          <div class="route-node"></div>
+        </div>
+        <ul class="trend-list">
+          <li><span data-i18n="ambulanceEta">Ambulance ETA</span><strong>2.2h</strong></li>
+          <li><span data-i18n="priorityCorridor">Priority corridor</span><strong>Punjab</strong></li>
+          <li><span data-i18n="riskReduction">Risk reduction</span><strong>31%</strong></li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="feature-grid section-panel" data-section="Overview">
+      <div class="feature-tile tile-forecast">
+        <div class="tile-top">
+          <strong data-i18n="forecastTile">Forecast</strong>
+          <span class="feature-icon">📈</span>
+        </div>
+        <small data-i18n="forecastTileText">Predict demand shifts 72h ahead</small>
+      </div>
+      <div class="feature-tile tile-alerts">
+        <div class="tile-top">
+          <strong data-i18n="alertsTile">Alerts</strong>
+          <span class="feature-icon">🚨</span>
+        </div>
+        <small data-i18n="alertsTileText">Detect shortages before they hit wards</small>
+      </div>
+      <div class="feature-tile tile-dispatch">
+        <div class="tile-top">
+          <strong data-i18n="dispatchTile">Dispatch</strong>
+          <span class="feature-icon">🚑</span>
+        </div>
+        <small data-i18n="dispatchTileText">Route ambulances to highest-risk sites</small>
+      </div>
+      <div class="feature-tile tile-action">
+        <div class="tile-top">
+          <strong data-i18n="actionTile">Action</strong>
+          <span class="feature-icon">⚡</span>
+        </div>
+        <small data-i18n="actionTileText">Trigger resource reallocation instantly</small>
+      </div>
+    </div>
+
+    <div class="card section-panel" data-section="Overview" style="margin-bottom: 18px;">
+      <h3 data-i18n="watchlistTitle">Regional watchlist</h3>
+      <div class="h-scroll-panel">
+        <div class="h-scroll-track">
+          <div class="h-scroll-card">
+            <div class="small">Brazil</div>
+            <strong style="display:block;margin:8px 0;">Medicine buffer</strong>
+            <div class="small">Healthy supply chain • 92% reserve</div>
+          </div>
+          <div class="h-scroll-card">
+            <div class="small">India</div>
+            <strong style="display:block;margin:8px 0;">Punjab risk</strong>
+            <div class="small">High demand • 6h shortage window</div>
+          </div>
+          <div class="h-scroll-card">
+            <div class="small">South Africa</div>
+            <strong style="display:block;margin:8px 0;">Cold chain</strong>
+            <div class="small">Stable transport • insulin safe</div>
+          </div>
+          <div class="h-scroll-card">
+            <div class="small">China</div>
+            <strong style="display:block;margin:8px 0;">Urban load</strong>
+            <div class="small">Moderate stress • ICU watch</div>
+          </div>
+          <div class="h-scroll-card">
+            <div class="small">Russia</div>
+            <strong style="display:block;margin:8px 0;">Regional readiness</strong>
+            <div class="small">Recovery stable • beds available</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="signal-grid section-panel" data-section="Clinical">
+      <section class="card">
+        <h3 data-i18n="regionalSignal">Regional signal</h3>
+        <div class="mini-chart" aria-label="regional demand chart">
+          <span style="height: 46%"></span>
+          <span style="height: 58%"></span>
+          <span style="height: 63%"></span>
+          <span style="height: 72%"></span>
+          <span style="height: 81%"></span>
+          <span style="height: 90%"></span>
+        </div>
+        <div class="status-grid">
+          <div class="status-box"><span class="small" data-i18n="demandLabel">Demand</span><strong>+12%</strong></div>
+          <div class="status-box"><span class="small" data-i18n="shortageLift">Shortage lift</span><strong>6h</strong></div>
+          <div class="status-box"><span class="small" data-i18n="supplyEta">Supply ETA</span><strong>2.4h</strong></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3 data-i18n="priorityTriage">Priority triage</h3>
+        <div id="priorityFeed" class="facility-list"></div>
+      </section>
+    </div>
+
+    <div class="grid section-panel" data-section="Clinical">
+      <div class="metric-card">
+        <div class="info-header">
+          <span class="info-icon">💊</span>
+          <div class="metric-label" data-i18n="medicineMetric">Medicine stock</div>
+        </div>
+        <div class="metric-value" id="medicineKpi">0</div>
+        <div class="badge" id="medicineBadge">Stable</div>
+      </div>
+      <div class="metric-card">
+        <div class="info-header">
+          <span class="info-icon">🛏️</span>
+          <div class="metric-label" data-i18n="bedsMetric">Beds</div>
+        </div>
+        <div class="metric-value" id="bedsKpi">0</div>
+        <div class="badge" id="bedsBadge">Healthy</div>
+      </div>
+      <div class="metric-card">
+        <div class="info-header">
+          <span class="info-icon">🩺</span>
+          <div class="metric-label" data-i18n="doctorsMetric">Doctors</div>
+        </div>
+        <div class="metric-value" id="doctorsKpi">0</div>
+        <div class="badge" id="doctorsBadge">Available</div>
+      </div>
+      <div class="metric-card">
+        <div class="info-header">
+          <span class="info-icon">👥</span>
+          <div class="metric-label" data-i18n="patientsMetric">Patients/day</div>
+        </div>
+        <div class="metric-value" id="patientsKpi">0</div>
+        <div class="badge" id="patientsBadge">Normal</div>
+      </div>
+    </div>
+
+    <div class="grid section-panel" data-section="Logistics">
+      <section class="info-card">
+        <div class="info-header">
+          <span class="info-icon">📊</span>
+          <h2 data-i18n="operationsBoard">Operations board</h2>
+        </div>
+        <div id="opsFeed" class="facility-list"></div>
+      </section>
+
+      <section class="info-card">
+        <div class="info-header">
+          <span class="info-icon">🚚</span>
+          <h2 data-i18n="dispatchQueueTitle">Dispatch queue</h2>
+        </div>
+        <div id="dispatchQueue" class="recommend-list"></div>
+      </section>
+    </div>
+
+    <div class="grid section-panel" data-section="Logistics">
+      <section class="info-card">
+        <div class="info-header">
+          <span class="info-icon">🛰️</span>
+          <h2 data-i18n="fieldStatusTitle">Field status</h2>
+        </div>
+        <ul>
+          <li>Ambulance 12: En route to Punjab Health Centre</li>
+          <li>Mobile clinic 3: Ready for rural outreach</li>
+          <li>Cold-chain status: Insulin transfer approved</li>
+        </ul>
+      </section>
+      <section class="info-card">
+        <div class="info-header">
+          <span class="info-icon">🧰</span>
+          <h2 data-i18n="resourceReadinessTitle">Resource readiness</h2>
+        </div>
+        <ul>
+          <li>Nurses available: 21</li>
+          <li>ICU beds reserved: 6</li>
+          <li>Inventory transfer window: 90 minutes</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="grid section-panel" data-section="Logistics">
+      <section class="info-card">
+        <div class="info-header">
+          <span class="info-icon">🏥</span>
+          <h2 data-i18n="facilityWatchTitle">Facility watch</h2>
+        </div>
+        <div class="facility-list" id="facilityList"></div>
+      </section>
+
+      <section class="info-card">
+        <div class="info-header">
+          <span class="info-icon">✅</span>
+          <h2 data-i18n="recommendedActionsTitle">Recommended actions</h2>
+        </div>
+        <div class="recommend-list" id="recommendList"></div>
+      </section>
+    </div>
+
+    <div class="grid section-panel" data-section="Alerts">
+      <section class="card">
+        <h2 data-i18n="alertsTitle">Alerts</h2>
+        <div class="alerts-list" id="alertList"></div>
+      </section>
+
+      <section class="card">
+        <h2 data-i18n="simTitle">What-if simulator</h2>
+        <div class="slider-wrap">
+          <label class="small" for="fluSlider">New case spike</label>
+          <input id="fluSlider" type="range" min="0" max="100" value="30" />
+        </div>
+        <div class="slider-wrap">
+          <label class="small" for="stockSlider">Medicine stock disruption</label>
+          <input id="stockSlider" type="range" min="0" max="100" value="25" />
+        </div>
+        <button id="runScenarioBtn" style="margin-top: 12px; width: 100%;">Run scenario</button>
+        <div id="scenarioOutput" class="muted" style="margin-top: 12px; min-height: 48px;"></div>
+      </section>
+    </div>
+
+    <div class="grid section-panel" data-section="Logistics">
+      <section class="card">
+        <h2>Inventory & logistics</h2>
+        <ul>
+          <li>Medicine supply chain risk: 12% above threshold</li>
+          <li>Cold chain active for vaccines and insulin</li>
+          <li>Distributor handoff window: 2.4 hours</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>AI forecast</h2>
+        <ul>
+          <li>Projected ICU demand: +18% in 72 hours</li>
+          <li>Risk region cluster: Punjab + Haryana corridor</li>
+          <li>Recommended dispatch: 2 ambulances, 1 mobile clinic</li>
+        </ul>
+      </section>
+    </div>
+
+      <div class="footer">Demo mode • 30s live refresh simulation • no backend dependency</div>
+    </div>
+  </main>
+
+  <script>
+    const countries = [
+      'Brazil', 'India', 'South Africa', 'China', 'Russia'
+    ];
+
+    const langOptions = [
+      { value: 'en', label: 'English' },
+      { value: 'hi', label: 'हिन्दी' },
+      { value: 'bn', label: 'বাংলা' },
+      { value: 'ta', label: 'தமிழ்' },
+      { value: 'te', label: 'తెలుగు' },
+      { value: 'ml', label: 'മലയാളം' },
+      { value: 'mr', label: 'मराठी' },
+      { value: 'gu', label: 'ગુજરાતી' },
+      { value: 'kn', label: 'ಕನ್ನಡ' },
+      { value: 'or', label: 'ଓଡ଼ିଆ' },
+      { value: 'pa', label: 'ਪੰਜਾਬੀ' },
+      { value: 'as', label: 'অসমীয়া' },
+      { value: 'ur', label: 'اردو' },
+      { value: 'ne', label: 'नेपाली' },
+      { value: 'sa', label: 'संस्कृत' },
+      { value: 'ks', label: 'कश्मीरी' },
+      { value: 'kok', label: 'कोंकणी' },
+      { value: 'mni', label: 'মণিপুরী' },
+      { value: 'bo', label: 'བོད་ཡིག' },
+      { value: 'doi', label: 'डोगरी' },
+      { value: 'mai', label: 'मैथिली' },
+      { value: 'sd', label: 'سنڌي' },
+      { value: 'sat', label: 'ᱥᱟᱱᱛᱟᱞᱤ' },
+      { value: 'pt', label: 'Português' },
+      { value: 'ru', label: 'Русский' },
+      { value: 'zh', label: '中文' },
+      { value: 'es', label: 'Español' },
+      { value: 'fr', label: 'Français' },
+      { value: 'de', label: 'Deutsch' },
+      { value: 'ar', label: 'العربية' },
+      { value: 'sw', label: 'Swahili' },
+      { value: 'af', label: 'Afrikaans' }
+    ];
+
+    const translations = {
+      en: {
+        appTitle: 'BRICS Health Digital Twin Demo',
+        brand: 'BRICS Care',
+        navOverview: 'Overview', navClinical: 'Clinical', navLogistics: 'Logistics', navForecast: 'Forecast', navAlerts: 'Alerts',
+        heroEyebrow: 'BRICS Regional Health Command',
+        heroHeadline: 'Predict shortages before they reach the ward',
+        regionalRisk: 'Regional risk', riskLevel: 'Moderate', dispatchPlan: 'Dispatch plan', dispatchValue: '2 ambulances',
+        icuSignal: 'ICU signal', dispatchAction: 'Dispatch', forecastAction: 'Forecast', escalateAction: 'Escalate',
+        aiAssistantLive: 'AI Assistant • Live', recommendedNextMove: 'Recommended next move', aiRecommendation: 'Reallocate 300 units of medicine from a low-risk center and pre-position an ICU-ready ambulance corridor toward Punjab.',
+        shortageRisk: 'Shortage risk', ambulanceRoute: 'Ambulance route', supplyTransfer: 'Supply transfer', aiReasoning: 'AI reasoning',
+        aiCopilotActive: 'AI Copilot • Active', whatNext: 'What should I do next?', routeIntelligence: 'Route intelligence',
+        regionalSignal: 'Regional signal', priorityTriage: 'Priority triage', alertsTitle: 'Alerts', simTitle: 'What-if simulator',
+        stable: 'Stable', healthy: 'Healthy', available: 'Available', normal: 'Normal',
+        moderate: 'Moderate risk', critical: 'Critical risk', alert: 'Alert', emergency: 'Emergency',
+        ambulanceAssigned: 'Ambulance assigned to', shortage: 'Shortage risk', recommend: 'Recommended action',
+        action1: 'Move 300 units of medicine from a surplus center.',
+        action2: 'Reassign two nurses to high-risk triage.',
+        action3: 'Stage extra ICU beds near the emergency corridor.',
+        medicine: 'Medicine stock', beds: 'Beds', doctors: 'Doctors', patients: 'Patients/day',
+        facilityWatch: 'Facility watch', recommendations: 'Recommended actions', alerts: 'Alerts', sim: 'What-if simulator', live: 'Live simulation'
+      },
+      hi: {
+        appTitle: 'BRICS हेल्थ डिजिटल ट्विन डेमो',
+        brand: 'BRICS केयर',
+        navOverview: 'अवलोकन', navClinical: 'क्लिनिकल', navLogistics: 'लॉजिस्टिक्स', navForecast: 'पूर्वानुमान', navAlerts: 'अलर्ट',
+        heroEyebrow: 'BRICS क्षेत्रीय स्वास्थ्य कमांड',
+        heroHeadline: 'वार्ड तक पहुँचने से पहले短क आवक की कमी का अनुमान लगाएँ',
+        regionalRisk: 'क्षेत्रीय जोखिम', riskLevel: 'मध्यम', dispatchPlan: 'डिस्पैच योजना', dispatchValue: '2 एम्बुलेंस',
+        icuSignal: 'ICU संकेत', dispatchAction: 'डिस्पैच', forecastAction: 'पूर्वानुमान', escalateAction: 'उच्च स्तर',
+        aiAssistantLive: 'एआई सहायक • लाइव', recommendedNextMove: 'अगला सुझाया गया कदम', aiRecommendation: 'कम जोखिम वाले केंद्र से 300 इकाइयों की दवा पुनः आवंटित करें और पंजाब की ओर ICU-तैयार एम्बुलेंस कॉरिडोर तैयार करें।',
+        shortageRisk: 'स्टॉक जोखिम', ambulanceRoute: 'एम्बुलेंस रूट', supplyTransfer: 'सप्लाई ट्रांसफर', aiReasoning: 'एआई तर्क',
+        aiCopilotActive: 'एआई कोपायलट • सक्रिय', whatNext: 'मैं अगला क्या करूँ?', routeIntelligence: 'रूट इंटेलिजेंस',
+        regionalSignal: 'क्षेत्रीय संकेत', priorityTriage: 'प्राथमिकता ट्राएज', alertsTitle: 'अलर्ट', simTitle: 'अगर-तो सिम्युलेटर',
+        stable: 'स्थिर', healthy: 'स्वस्थ', available: 'उपलब्ध', normal: 'सामान्य',
+        moderate: 'मध्यम जोखिम', critical: 'गंभीर जोखिम', alert: 'अलर्ट', emergency: 'आपातकाल',
+        ambulanceAssigned: 'एम्बुलेंस असाइन किया गया', shortage: 'स्टॉक जोखिम', recommend: 'सिफारिश',
+        action1: 'अतिरिक्त केंद्र से 300 इकाइयाँ दवा ले जाएँ।',
+        action2: 'उच्च जोखिम ट्राएज में दो नर्सों को पुनर्नियुक्त करें।',
+        action3: 'आपातकालीन गलियारे के पास अतिरिक्त ICU बेड तैयार करें।',
+        medicine: 'दवा सूची', beds: 'बिस्तर', doctors: 'डॉक्टर', patients: 'रोगियों/दिन',
+        facilityWatch: 'संस्थान निगरानी', recommendations: 'सिफारिशें', alerts: 'अलर्ट', sim: 'अगर-तो सिम्युलेटर', live: 'लाइव सिमुलेशन'
+      },
+      bn: {
+        appTitle: 'BRICS স্বাস্থ্য ডিজিটাল টুইন ডেমো',
+        brand: 'BRICS কেয়ার',
+        navOverview: 'সংক্ষিপ্ত বিবরণ', navClinical: 'ক্লিনিক্যাল', navLogistics: 'লজিস্টিকস', navForecast: 'পূর্বাভাস', navAlerts: 'সতর্কতা',
+        heroEyebrow: 'BRICS আঞ্চলিক স্বাস্থ্য কমান্ড',
+        heroHeadline: 'ওয়ার্ডে পৌঁছানোর আগে সরবরাহ ঘাটতি পূর্বাভাস করুন',
+        regionalRisk: 'আঞ্চলিক ঝুঁকি', riskLevel: 'মাঝারি', dispatchPlan: 'ডিসপ্যাচ পরিকল্পনা', dispatchValue: '2 অ্যাম্বুলেন্স',
+        icuSignal: 'ICU সংকেত', dispatchAction: 'ডিসপ্যাচ', forecastAction: 'পূর্বাভাস', escalateAction: 'বড় করুন',
+        aiAssistantLive: 'এআই সহকারী • লাইভ', recommendedNextMove: 'পরের পরামর্শিত পদক্ষেপ', aiRecommendation: 'কম ঝুঁকির কেন্দ্র থেকে 300 ইউনিট ওষুধ স্থানান্তর করুন এবং পাঞ্জাবের দিকে ICU-প্রস্তুত অ্যাম্বুলেন্স করিডোর পূর্বস্থাপন করুন।',
+        shortageRisk: 'স্টক ঝুঁকি', ambulanceRoute: 'অ্যাম্বুলেন্স রুট', supplyTransfer: 'সাপ্লাই ট্রান্সফার', aiReasoning: 'এআই যুক্তি',
+        aiCopilotActive: 'এআই কপাইলট • সক্রিয়', whatNext: 'আমি পরবর্তী কী করব?', routeIntelligence: 'রুট ইন্টেলিজেন্স',
+        regionalSignal: 'আঞ্চলিক সংকেত', priorityTriage: 'প্রাথমিকতা ট্রায়েজ', alertsTitle: 'সতর্কতা', simTitle: 'যদি-তাহলে সিমুলেশন',
+        stable: 'স্থির', healthy: 'স্বাস্থ্যকর', available: 'উপলব্ধ', normal: 'স্বাভাবিক',
+        moderate: 'মাঝারি ঝুঁকি', critical: 'গুরুতর ঝুঁকি', alert: 'সতর্কতা', emergency: 'জরুরি',
+        ambulanceAssigned: 'অ্যাম্বুল্যান্স বরাদ্দ হয়েছে', shortage: 'স্টক ঝুঁকি', recommend: 'প্রস্তাবিত পদক্ষেপ',
+        action1: 'অতিরিক্ত কেন্দ্র থেকে 300 ইউনিট ওষুধ স্থানান্তর করুন।',
+        action2: 'উচ্চ-ঝুঁকিপূর্ণ ট্রায়েজে দুইটি নার্স পুনরায় বরাদ্দ করুন।',
+        action3: 'ইমার্জেন্সি করিডরের পাশে অতিরিক্ত ICU বেড প্রস্তুত করুন।',
+        medicine: 'ওষুধ স্টক', beds: 'বেড', doctors: 'ডাক্তার', patients: 'রোগী/দিন',
+        facilityWatch: 'ফ্যাসিলিটি ওয়াচ', recommendations: 'প্রস্তাবিত পদক্ষেপ', alerts: 'সতর্কতা', sim: 'যদি-তাহলে সিমুলেশন', live: 'লাইভ সিমুলেশন'
+      },
+      ta: {
+        appTitle: 'BRICS சுகாதார டிஜிட்டல் ட்வின் டெமோ', brand: 'BRICS கேர்', navOverview: 'கண்ணோட்டம்', navClinical: 'கிளினிக்கல்', navLogistics: 'லாஜிஸ்டிக்ஸ்', navForecast: 'முன்கணிப்பு', navAlerts: 'எச்சரிக்கைகள்', heroEyebrow: 'BRICS பிராந்திய சுகாதார கட்டளை', heroHeadline: 'அறை வரை வருவதற்கு முன்பே பற்றாக்குறையை கணிக்கவும்', regionalRisk: 'பிராந்திய ஆபத்து', riskLevel: 'மிதமான', dispatchPlan: 'விநியோக திட்டம்', dispatchValue: '2 ஆம்புலன்ஸ்கள்', icuSignal: 'ICU சமிக்ஞை', dispatchAction: 'விநியோகம்', forecastAction: 'முன்கணிப்பு', escalateAction: 'உயர்த்தவும்', aiAssistantLive: 'AI உதவியாளர் • நேரடி', recommendedNextMove: 'பரிந்துரைக்கப்பட்ட அடுத்த படி', aiRecommendation: 'குறைவான ஆபத்து மையத்திலிருந்து 300 யூனிட் மருந்துகளை மாற்றி, பஞ்சாப்பிற்கு ICU தயார்நிலை ஆம்புலன்ஸ் கொலையிருப்பை அமைக்கவும்.', shortageRisk: 'குறைவின் ஆபத்து', ambulanceRoute: 'ஆம்புலன்ஸ் பாதை', supplyTransfer: 'வழங்கல் மாற்றம்', aiReasoning: 'AI பகுப்பாய்வு', aiCopilotActive: 'AI கோபைலட் • செயலில்', whatNext: 'அடுத்ததாக நான் என்ன செய்ய வேண்டும்?', routeIntelligence: 'பாதை நுண்ணறிவு', regionalSignal: 'பிராந்திய சமிக்ஞை', priorityTriage: 'முன்னுரிமை ட்ரையேஜ்', alertsTitle: 'எச்சரிக்கைகள்', simTitle: 'சூழ்நிலை உருவகப்படுத்துதல்', stable: 'நிலையான', healthy: 'சுகாதாரமான', available: 'கிடைக்கிறது', normal: 'சாதாரணம்', moderate: 'மிதமான ஆபத்து', critical: 'மிகுந்த ஆபத்து', alert: 'எச்சரிக்கை', emergency: 'அவசரம்', ambulanceAssigned: 'ஆம்புலன்ஸ் ஒதுக்கப்பட்டது', shortage: 'குறைவு ஆபத்து', recommend: 'பரிந்துரைக்கப்பட்ட நடவடிக்கை', action1: 'மிகப்பெரிய இருப்பில் உள்ள மையத்திலிருந்து 300 யூனிட் மருந்துகளை நகர்த்தவும்.', action2: 'உயர் ஆபத்து ட்ரையேஜிற்கு இரண்டு செவிலியர்களை மீண்டும் ஒதுக்கவும்.', action3: 'அவசர பாதைக்கு அருகில் கூடுதல் ICU படுக்கைகளை தயார் செய்யவும்.', medicine: 'மருந்து இருப்பு', beds: 'படுக்கைகள்', doctors: 'மருத்துவர்கள்', patients: 'நோயாளிகள்/நாள்', facilityWatch: 'சேவை கண்காணிப்பு', recommendations: 'பரிந்துரைக்கப்பட்ட நடவடிக்கைகள்', alerts: 'எச்சரிக்கைகள்', sim: 'சூழ்நிலை உருவகப்படுத்துதல்', live: 'நேரடி உருவகப்படுத்துதல்'
+      },
+      te: {
+        appTitle: 'BRICS ఆరోగ్య డిజిటల్ ట్విన్ డెమో', brand: 'BRICS కేర్', navOverview: 'వివరణ', navClinical: 'క్లినికల్', navLogistics: 'లాజిస్టిక్స్', navForecast: 'అంచనా', navAlerts: 'హెచ్చరికలు', heroEyebrow: 'BRICS ప్రాంతీయ ఆరోగ్య కమాండ్', heroHeadline: 'వార్డు చేరకముందే కొరతను అంచనా వేయండి', regionalRisk: 'ప్రాంతీయ ప్రమాదం', riskLevel: 'మధ్యస్థ', dispatchPlan: 'డిస్పాచ్ ప్లాన్', dispatchValue: '2 అంబులెన్సులు', icuSignal: 'ICU సంకేతం', dispatchAction: 'డిస్పాచ్', forecastAction: 'అంచనా', escalateAction: 'ఎగ్జిక్యూట్', aiAssistantLive: 'AI సహాయకుడు • లైవ్', recommendedNextMove: 'సిఫార్సు చేసిన తదుపరి చర్య', aiRecommendation: 'తక్కువ ప్రమాద కేంద్రం నుండి 300 యూనిట్ల మందులను మార్చి, పంజాబ్ వైపు ICU-సిద్ధ అంబులెన్స్ కారిడార్ను ముందుగా ఏర్పాటు చేయండి.', shortageRisk: 'కొరత ప్రమాదం', ambulanceRoute: 'అంబులెన్స్ రూట్', supplyTransfer: 'సరఫరా బదిలీ', aiReasoning: 'AI తార్కికం', aiCopilotActive: 'AI కోపైలట్ • క్రియాశీలం', whatNext: 'మరుసటి నిశ్చయం ఏమిటి?', routeIntelligence: 'రూట్ ఇంటెలిజెన్స్', regionalSignal: 'ప్రాంతీయ సంకేతం', priorityTriage: 'ప్రాధాన్యత ట్రయేజ్', alertsTitle: 'హెచ్చరికలు', simTitle: 'స్కైనారియో సిమ్యులేటర్', stable: 'స్థిర', healthy: 'సురక్షిత', available: 'అందుబాటులో', normal: 'సాధారణం', moderate: 'మధ్యస్థ ప్రమాదం', critical: 'క్లిష్ట ప్రమాదం', alert: 'హెచ్చరిక', emergency: 'అత్యవసరం', ambulanceAssigned: 'అంబులెన్స్ కేటాయించబడింది', shortage: 'కొరత ప్రమాదం', recommend: 'సిఫార్సు చేయబడిన చర్య', action1: 'మిగిలిన సెంటర్ నుండి 300 యూనిట్ల మందులను తరలించండి.', action2: 'అత్యధిక ప్రమాద ట్రయేజ్ కు రెండు నర్సులను మళ్లీ కేటాయించండి.', action3: 'ఎమర్జెన్సీ కారిడార్కు దగ్గరగా అదనపు ICU బెడ్స్‌ను సిద్ధంగా ఉంచండి.', medicine: 'మందుల నిల్వ', beds: 'బెడ్స్', doctors: 'వైద్యులు', patients: 'రోగులు/రోజు', facilityWatch: 'ఫెసిలిటీ వాచ్', recommendations: 'సిఫార్సు చేయబడిన చర్యలు', alerts: 'హెచ్చరికలు', sim: 'స్కైనారియో సిమ్యులేటర్', live: 'లైవ్ సిమ్యులేషన్'
+      },
+      ml: {
+        appTitle: 'BRICS ആരോഗ്യ ഡിജിറ്റൽ ട്വിൻ ഡെമോ', brand: 'BRICS കേർ', navOverview: 'വിവരണം', navClinical: 'ക്ലിനിക്കൽ', navLogistics: 'ലോജിസ്റ്റിക്സ്', navForecast: 'പ്രവചന', navAlerts: 'അലേർട്ടുകൾ', heroEyebrow: 'BRICS മേഖലാ ആരോഗ്യ കമാൻഡ്', heroHeadline: 'വാർഡ് എത്തുന്നതിന് മുമ്പ് ക്ഷാമം മുൻകൂട്ടി മനസ്സിലാക്കുക', regionalRisk: 'മേഖലാ जोखिमം', riskLevel: 'മിതത്വം', dispatchPlan: 'ഡിസ്പാച്ച് പദ്ധതി', dispatchValue: '2 ആംബുലൻസുകൾ', icuSignal: 'ICU സിഗ്നൽ', dispatchAction: 'ഡിസ്പാച്ച്', forecastAction: 'പ്രവചനം', escalateAction: 'വളരട്ടെ', aiAssistantLive: 'AI അസിസ്റ്റന്റ് • ലൈവ്', recommendedNextMove: 'അടുത്ത ശുപാർശ ചെയ്യപ്പെട്ടStep', aiRecommendation: 'കുറഞ്ഞ അപകട മേഖലയിൽ നിന്നുള്ള 300 യൂണിറ്റുകൾ പ medicines ലേക്ക് മാറ്റി, പഞ്ചാബിലേക്ക് ICU-തയ്യാറായ ആംബുലൻസ് കൊറിഡോർ തയ്യാറാക്കുക.', shortageRisk: 'ക്ഷാമ അപകടം', ambulanceRoute: 'ആംബുലൻസ് റൂട്ട്', supplyTransfer: 'സ്റ്റോക്ക് കൈമാറ്റം', aiReasoning: 'AI reasoning', aiCopilotActive: 'AI കോപൈലറ്റ് • സജീവം', whatNext: 'അടുത്തത് ഞാൻ എന്ത് ചെയ്യും?', routeIntelligence: 'റൂട്ട് ഇന്റലിജൻസ്', regionalSignal: 'മേഖലാ സിഗ്നൽ', priorityTriage: 'പ്രൊഫർട്ടി ഡ്രയേജ്', alertsTitle: 'അലേർട്ടുകൾ', simTitle: 'സിമുലേഷൻ', stable: 'സ്ഥിരം', healthy: 'സുഖകരം', available: 'ലഭ്യമാണ്', normal: 'സാധാരണ', moderate: 'മിതമായ അപകടം', critical: 'ഗുരുതരമായ അപകടം', alert: 'അലേർട്ട്', emergency: 'അപകടം', ambulanceAssigned: 'ആംബുലൻസ് നിയോഗിച്ചു', shortage: 'ക്ഷാമ അപകടം', recommend: 'ശുപാർശ ചെയ്യപ്പെട്ട പ്രവർത്തനം', action1: 'അ surplus കേന്ദ്രത്തിൽ നിന്ന് 300 യൂണിറ്റുകൾ മരുന്നുകൾ നീക്കുക.', action2: 'ഉയർന്ന അപകടത്തിലുള്ള ട്രയേജിനായി രണ്ട് നഴ്സുമാരെ വീണ്ടും നിയോഗിക്കുക.', action3: 'അപകടകരമായ കൊറിഡോറിന് സമീപം അധിക ICU ബേഡുകൾ തയ്യാറാക്കുക.', medicine: 'മരുന്ന് സ്റ്റോക്ക്', beds: 'ബേഡുകൾ', doctors: 'ഡോക്ടർമാർ', patients: 'രോഗികൾ/ദിവസം', facilityWatch: 'ഫസിലിറ്റി വാച്ച്', recommendations: 'ശുപാർശ ചെയ്യപ്പെട്ട പ്രവർത്തനങ്ങൾ', alerts: 'അലേർട്ടുകൾ', sim: 'സിമുലേഷൻ', live: 'ലൈവ് സിമുലേഷൻ'
+      },
+      mr: {
+        appTitle: 'BRICS आरोग्य डिजिटल ट्विन डेमो', brand: 'BRICS केअर', navOverview: 'अवलोकन', navClinical: 'क्लिनिकल', navLogistics: 'लॉजिस्टिक्स', navForecast: 'पूर्वानुमान', navAlerts: 'अलर्ट्स', heroEyebrow: 'BRICS प्रादेशिक आरोग्य आदेश', heroHeadline: 'वॉर्डवर पोहोचण्यापूर्वी तूट ओळखा', regionalRisk: 'प्रादेशिक धोका', riskLevel: 'मध्यम', dispatchPlan: 'डिस्पॅच योजना', dispatchValue: '2 अॅम्ब्युलन्स', icuSignal: 'ICU सिग्नल', dispatchAction: 'डिस्पॅच', forecastAction: 'पूर्वानुमान', escalateAction: 'वाढवा', aiAssistantLive: 'AI सहाय्यक • लाइव्ह', recommendedNextMove: 'सुचवलेला पुढील चरण', aiRecommendation: 'कम जोखीम केंद्रातून 300 युनिट्स औषधे हलवा आणि पंजाबकडे ICU-तयार अॅम्ब्युलन्स कॉरिडॉर तात्काळ तयार करा.', shortageRisk: 'तूट धोका', ambulanceRoute: 'अॅम्ब्युलन्स मार्ग', supplyTransfer: 'पुरवठा हस्तांतरण', aiReasoning: 'AI तर्क', aiCopilotActive: 'AI कोपायलट • सक्रिय', whatNext: 'मग मी काय करावे?', routeIntelligence: 'मार्ग बुद्धिमत्ता', regionalSignal: 'प्रादेशिक सिग्नल', priorityTriage: 'प्राधान्य ट्रियाज', alertsTitle: 'अलर्ट्स', simTitle: 'सिनारिओ सिम्युलेटर', stable: 'स्थिर', healthy: 'आरोग्यदायी', available: 'उपलब्ध', normal: 'सामान्य', moderate: 'मध्यम धोका', critical: 'गंभीर धोका', alert: 'अलर्ट', emergency: 'तातडीची गरज', ambulanceAssigned: 'अॅम्ब्युलन्स नियुक्त', shortage: 'तूट धोका', recommend: 'शिफारस केलेले काम', action1: 'अतिरिक्त केंद्रातून 300 युनिट औषधे हलवा.', action2: 'उच्च जोखीम ट्रियाजमध्ये दोन नर्स नियुक्त करा.', action3: 'तातडीच्या कॉरिडॉर जवळ अतिरिक्त ICU बेड तयार करा.', medicine: 'औषधांचा स्टॉक', beds: 'बेड', doctors: 'डॉक्टर', patients: 'रोगी/दिवस', facilityWatch: 'फॅसिलिटी वॉच', recommendations: 'शिफारस केलेली कामे', alerts: 'अलर्ट्स', sim: 'सिनारिओ सिम्युलेटर', live: 'लाइव्ह सिम्युलेशन'
+      },
+      ur: {
+        appTitle: 'BRICS ہیلتھ ڈجٹل ٹوئن ڈیمو', brand: 'BRICS کیئر', navOverview: 'خلاصہ', navClinical: 'کلینیکل', navLogistics: 'لاگسٹکس', navForecast: 'پیشین گوئی', navAlerts: 'الرٹس', heroEyebrow: 'BRICS علاقائی صحت کمانڈ', heroHeadline: 'وارڈ پہنچنے سے پہلے قلت کا اندازہ لگائیں', regionalRisk: 'علاقائی خطرہ', riskLevel: 'درمیانہ', dispatchPlan: 'ڈسپچ پلان', dispatchValue: '2 ایمبولینس', icuSignal: 'ICU سگنل', dispatchAction: 'ڈسپچ', forecastAction: 'پیشین گوئی', escalateAction: 'بڑھائیں', aiAssistantLive: 'AI اسسٹنٹ • لائیو', recommendedNextMove: 'سفارش کردہ اگلا قدم', aiRecommendation: 'کم خطر مرکز سے 300 یونٹ دوا منتقل کریں اور پنجاب کی طرف ICU-تیار ایمبولینس کورڈور تیار کریں۔', shortageRisk: 'کمپلیمنٹ خطرہ', ambulanceRoute: 'ایمبولینس راستہ', supplyTransfer: 'سپلائی منتقلی', aiReasoning: 'AI استدلال', aiCopilotActive: 'AI کوپائلٹ • فعال', whatNext: 'آگلا میں کیا کروں؟', routeIntelligence: 'روٹ انٹیلی جنس', regionalSignal: 'علاقائی سگنل', priorityTriage: 'اولیت تریاژ', alertsTitle: 'الرٹس', simTitle: 'سیناریو سمیلیٹر', stable: 'مستحکم', healthy: 'صحتمند', available: 'دستیاب', normal: 'عام', moderate: 'درمیانی خطرہ', critical: 'انتہائی خطرہ', alert: 'الرٹ', emergency: 'ہنگامی', ambulanceAssigned: 'ایمبولینس تفویض ہو گئی', shortage: 'کمپلیمنٹ خطرہ', recommend: 'سفارش شدہ کارروائی', action1: 'زیادہ ذخیرہ مرکز سے 300 یونٹ دوا منتقل کریں۔', action2: 'بڑے خطرے والے ٹرائيج کے لیے دو نرسز دوبارہ تفویض کریں۔', action3: 'ایمرجنسی کورڈور کے قریب اضافی ICU بستر تیار کریں۔', medicine: 'دوا کا ذخیرہ', beds: 'بستر', doctors: 'ڈاکٹر', patients: 'مریض/دن', facilityWatch: 'فیکلیٹی واچ', recommendations: 'سفارش شدہ کارروائیاں', alerts: 'الرٹس', sim: 'سیناریو سمیلیٹر', live: 'لائیو سمولیشن'
+      },
+      fr: {
+        appTitle: 'Démo numérique du système de santé BRICS', brand: 'BRICS Care', navOverview: 'Vue d’ensemble', navClinical: 'Clinique', navLogistics: 'Logistique', navForecast: 'Prévision', navAlerts: 'Alertes', heroEyebrow: 'Commandement sanitaire régional BRICS', heroHeadline: 'Prévoir les pénuries avant qu’elles n’atteignent l’unité', regionalRisk: 'Risque régional', riskLevel: 'Modéré', dispatchPlan: 'Plan d’intervention', dispatchValue: '2 ambulances', icuSignal: 'Signal USI', dispatchAction: 'Intervention', forecastAction: 'Prévision', escalateAction: 'Escalader', aiAssistantLive: 'Assistant IA • En direct', recommendedNextMove: 'Prochaine étape recommandée', aiRecommendation: 'Réaffectez 300 unités de médicaments depuis un centre à faible risque et préparez un couloir d’ambulance prêt pour l’USI vers le Pendjab.', shortageRisk: 'Risque de pénurie', ambulanceRoute: 'Route d’ambulance', supplyTransfer: 'Transfert de stock', aiReasoning: 'Raisonnement IA', aiCopilotActive: 'Copilot IA • Actif', whatNext: 'Que dois-je faire ensuite ?', routeIntelligence: 'Intelligence de route', regionalSignal: 'Signal régional', priorityTriage: 'Triage prioritaire', alertsTitle: 'Alertes', simTitle: 'Simulateur de scénarios', stable: 'Stable', healthy: 'Sain', available: 'Disponible', normal: 'Normal', moderate: 'Risque modéré', critical: 'Risque critique', alert: 'Alerte', emergency: 'Urgence', ambulanceAssigned: 'Ambulance affectée à', shortage: 'Risque de pénurie', recommend: 'Action recommandée', action1: 'Déplacer 300 unités de médicaments depuis un centre excédentaire.', action2: 'Réaffecter deux infirmières au triage à haut risque.', action3: 'Préparer des lits de réanimation supplémentaires près du couloir d’urgence.', medicine: 'Stock de médicaments', beds: 'Lits', doctors: 'Médecins', patients: 'Patients/jour', facilityWatch: 'Surveillance des installations', recommendations: 'Actions recommandées', alerts: 'Alertes', sim: 'Simulateur de scénarios', live: 'Simulation en direct'
+      },
+      ar: {
+        appTitle: 'عرض تجريبي للنسخة الرقمية الصحية BRICS', brand: 'BRICS Care', navOverview: 'نظرة عامة', navClinical: 'سريري', navLogistics: 'لوجستيات', navForecast: 'التوقعات', navAlerts: 'تنبيهات', heroEyebrow: 'قيادة الصحة الإقليمية BRICS', heroHeadline: 'توقع النقص قبل وصوله إلى الجناح', regionalRisk: 'المخاطر الإقليمية', riskLevel: 'متوسط', dispatchPlan: 'خطة الإرسال', dispatchValue: '2 سيارات إسعاف', icuSignal: 'إشارة العناية المركزة', dispatchAction: 'إرسال', forecastAction: 'توقعات', escalateAction: 'تصعيد', aiAssistantLive: 'مساعد الذكاء الاصطناعي • مباشر', recommendedNextMove: 'الخطوة التالية الموصى بها', aiRecommendation: 'أعد تخصيص 300 وحدة دواء من مركز منخفض المخاطر، وقم بإعداد ممر إسعاف مستعد للعناية المركزة نحو البنجاب.', shortageRisk: 'مخاطر النقص', ambulanceRoute: 'مسار الإسعاف', supplyTransfer: 'نقل الإمدادات', aiReasoning: 'منطق الذكاء الاصطناعي', aiCopilotActive: 'النسخة المساعدة الذكية • نشطة', whatNext: 'ماذا أفعل بعد ذلك؟', routeIntelligence: 'ذكاء المسار', regionalSignal: 'إشارة إقليمية', priorityTriage: 'فرز أولوي', alertsTitle: 'تنبيهات', simTitle: 'محاكي السيناريوهات', stable: 'مستقر', healthy: 'صحي', available: 'متاح', normal: 'عادي', moderate: 'مخاطر متوسطة', critical: 'مخاطر حرجة', alert: 'تنبيه', emergency: 'طارئ', ambulanceAssigned: 'تم تخصيص سيارة إسعاف إلى', shortage: 'مخاطر النقص', recommend: 'إجراء موصى به', action1: 'نقل 300 وحدة دواء من مركز فائض.', action2: 'إعادة توزيع ممرضتين إلى فرز المخاطر العالية.', action3: 'إعداد أسرة إضافية للعناية المركزة قرب ممر الطوارئ.', medicine: 'مخزون الأدوية', beds: 'أسرة', doctors: 'أطباء', patients: 'مرضى/يوم', facilityWatch: 'مراقبة المرافق', recommendations: 'إجراءات موصى بها', alerts: 'تنبيهات', sim: 'محاكي السيناريوهات', live: 'محاكاة مباشرة'
+      },
+      af: {
+        appTitle: 'BRICS Gesondheids Digitale Tweeling Demo', brand: 'BRICS Care', navOverview: 'Oorsig', navClinical: 'Klinies', navLogistics: 'Logistiek', navForecast: 'Voorspelling', navAlerts: 'Waarskuwings', heroEyebrow: 'BRICS Streeksgesondheidsbevel', heroHeadline: 'Voorsien tekorte voordat dit die saal bereik', regionalRisk: 'Streekrisiko', riskLevel: 'Matig', dispatchPlan: 'Ontsagplan', dispatchValue: '2 ambulansies', icuSignal: 'ICU-sein', dispatchAction: 'Ontsag', forecastAction: 'Voorspelling', escalateAction: 'Escaleer', aiAssistantLive: 'KI-assistent • Regstreeks', recommendedNextMove: 'Aanbevole volgende stap', aiRecommendation: 'Herverdeel 300 eenhede medisyne uit ’n lae-risiko-sentrum en plaas ’n ICU-gereed ambulanskorridor na Punjab.', shortageRisk: 'Tekort-risiko', ambulanceRoute: 'Ambulansroete', supplyTransfer: 'Voorraadverskuiwing', aiReasoning: 'KI-beredenering', aiCopilotActive: 'KI-kopilot • Aktief', whatNext: 'Wat moet ek volgende doen?', routeIntelligence: 'Roete-intelligensie', regionalSignal: 'Streeksein', priorityTriage: 'Prioriteitsvervoer', alertsTitle: 'Waarskuwings', simTitle: 'Scenario-simulator', stable: 'Stabiel', healthy: 'Gesond', available: 'Beskikbaar', normal: 'Normaal', moderate: 'Matige risiko', critical: 'Kritiese risiko', alert: 'Waarskuwing', emergency: 'Nood', ambulanceAssigned: 'Ambulans toegewys aan', shortage: 'Tekort-risiko', recommend: 'Aanbevole aksie', action1: 'Verplaas 300 eenhede medisyne uit ’n surplus-sentrum.', action2: 'Herallokeer twee verpleegkundiges na hoë-risiko triage.', action3: 'Stel bykomende ICU-beddens naby die noodkorridor op.', medicine: 'Medisynevoorraad', beds: 'Beddens', doctors: 'Dokters', patients: 'Pasiënte/dag', facilityWatch: 'Fasiliteitwaak', recommendations: 'Aanbevole aksies', alerts: 'Waarskuwings', sim: 'Scenario-simulator', live: 'Regstreekse simulasie'
+      },
+      pt: {
+        appTitle: 'Demonstração de gêmeo digital de saúde BRICS',
+        brand: 'BRICS Care',
+        navOverview: 'Visão geral', navClinical: 'Clínica', navLogistics: 'Logística', navForecast: 'Previsão', navAlerts: 'Alertas',
+        heroEyebrow: 'Comando regional de saúde BRICS',
+        heroHeadline: 'Antecipe escassez antes que ela chegue à ala',
+        regionalRisk: 'Risco regional', riskLevel: 'Moderado', dispatchPlan: 'Plano de envio', dispatchValue: '2 ambulâncias',
+        icuSignal: 'Sinal de UTI', dispatchAction: 'Envio', forecastAction: 'Previsão', escalateAction: 'Escalar',
+        aiAssistantLive: 'Assistente de IA • Ao vivo', recommendedNextMove: 'Próxima ação recomendada', aiRecommendation: 'Realoque 300 unidades de medicamentos de um centro de baixo risco e posicione um corredor de ambulância pronto para UTI em direção a Punjab.',
+        shortageRisk: 'Risco de escassez', ambulanceRoute: 'Rota da ambulância', supplyTransfer: 'Transferência de suprimentos', aiReasoning: 'Raciocínio de IA',
+        aiCopilotActive: 'Copiloto de IA • Ativo', whatNext: 'O que devo fazer a seguir?', routeIntelligence: 'Inteligência de rota',
+        regionalSignal: 'Sinal regional', priorityTriage: 'Triagem prioritária', alertsTitle: 'Alertas', simTitle: 'Simulador de cenários',
+        stable: 'Estável', healthy: 'Saudável', available: 'Disponível', normal: 'Normal',
+        moderate: 'Risco moderado', critical: 'Risco crítico', alert: 'Alerta', emergency: 'Emergência',
+        ambulanceAssigned: 'Ambulância atribuída', shortage: 'Risco de escassez', recommend: 'Ação recomendada',
+        action1: 'Mover 300 unidades de medicamento de um centro excedente.',
+        action2: 'Reatribuir duas enfermeiras para o triage de alto risco.',
+        action3: 'Preparar leitos de UTI extras perto do corredor de emergência.',
+        medicine: 'Estoque de medicamentos', beds: 'Leitos', doctors: 'Médicos', patients: 'Pacientes/dia',
+        facilityWatch: 'Monitoramento da unidade', recommendations: 'Ações recomendadas', alerts: 'Alertas', sim: 'Simulador de cenários', live: 'Simulação ao vivo'
+      },
+      ru: {
+        appTitle: 'Демонстрация цифрового двойника BRICS Health',
+        brand: 'BRICS Care',
+        navOverview: 'Обзор', navClinical: 'Клиника', navLogistics: 'Логистика', navForecast: 'Прогноз', navAlerts: 'Оповещения',
+        heroEyebrow: 'Региональное командование здравоохранением BRICS',
+        heroHeadline: 'Предсказывайте дефицит до того, как он дойдёт до палаты',
+        regionalRisk: 'Региональный риск', riskLevel: 'Средний', dispatchPlan: 'План диспетчеризации', dispatchValue: '2 машины скорой помощи',
+        icuSignal: 'Сигнал ICU', dispatchAction: 'Диспетчеризация', forecastAction: 'Прогноз', escalateAction: 'Эскалация',
+        aiAssistantLive: 'ИИ-помощник • Онлайн', recommendedNextMove: 'Следующий рекомендуемый шаг', aiRecommendation: 'Переместите 300 единиц лекарств из низкорискового центра и подготовьте коридор скорой помощи для ICU в направлении Пенджаба.',
+        shortageRisk: 'Риск дефицита', ambulanceRoute: 'Маршрут скорой помощи', supplyTransfer: 'Перемещение запасов', aiReasoning: 'ИИ-рассуждение',
+        aiCopilotActive: 'ИИ-ко-пилот • Активен', whatNext: 'Что делать дальше?', routeIntelligence: 'Маршрутная аналитика',
+        regionalSignal: 'Региональный сигнал', priorityTriage: 'Приоритетная сортировка', alertsTitle: 'Оповещения', simTitle: 'Симулятор сценариев',
+        stable: 'Стабильно', healthy: 'Здорово', available: 'Доступно', normal: 'Нормально',
+        moderate: 'Средний риск', critical: 'Критический риск', alert: 'Оповещение', emergency: 'Экстренно',
+        ambulanceAssigned: 'Скорая помощь назначена', shortage: 'Риск дефицита', recommend: 'Рекомендуемое действие',
+        action1: 'Переместить 300 единиц лекарств из центров с запасами.',
+        action2: 'Перераспределить двух медсестер в зону высокого риска.',
+        action3: 'Подготовить дополнительные ICU койки рядом с коридором экстренной помощи.',
+        medicine: 'Запасы медикаментов', beds: 'Кровати', doctors: 'Врачи', patients: 'Пациенты/день',
+        facilityWatch: 'Мониторинг учреждений', recommendations: 'Рекомендуемые действия', alerts: 'Оповещения', sim: 'Симулятор сценариев', live: 'Живая симуляция'
+      },
+      zh: {
+        appTitle: 'BRICS 健康数字孪生演示',
+        brand: 'BRICS Care',
+        navOverview: '概览', navClinical: '临床', navLogistics: '物流', navForecast: '预测', navAlerts: '告警',
+        heroEyebrow: 'BRICS 区域卫生指挥',
+        heroHeadline: '在短缺到达病房前提前预警',
+        regionalRisk: '区域风险', riskLevel: '中等', dispatchPlan: '调度计划', dispatchValue: '2 辆救护车',
+        icuSignal: 'ICU 信号', dispatchAction: '调度', forecastAction: '预测', escalateAction: '升级',
+        aiAssistantLive: 'AI 助手 • 实时', recommendedNextMove: '建议的下一步行动', aiRecommendation: '从低风险中心调拨 300 单位药品，并沿旁遮普方向预置 ICU 级救护车通道。',
+        shortageRisk: '短缺风险', ambulanceRoute: '救护车路线', supplyTransfer: '供应转移', aiReasoning: 'AI 推理',
+        aiCopilotActive: 'AI 协作助手 • 激活', whatNext: '下一步我该做什么？', routeIntelligence: '路线智能',
+        regionalSignal: '区域信号', priorityTriage: '优先分诊', alertsTitle: '告警', simTitle: '情景模拟器',
+        stable: '稳定', healthy: '健康', available: '可用', normal: '正常',
+        moderate: '中等风险', critical: '严重风险', alert: '警报', emergency: '紧急',
+        ambulanceAssigned: '救护车已分配', shortage: '短缺风险', recommend: '建议行动',
+        action1: '从盈余中心调拨 300 单位药品。',
+        action2: '将两名护士重新分配到高风险分诊区。',
+        action3: '在急诊通道附近准备额外 ICU 床位。',
+        medicine: '药品库存', beds: '床位', doctors: '医生', patients: '患者/天',
+        facilityWatch: '设施监控', recommendations: '建议行动', alerts: '警报', sim: '情景模拟器', live: '实时模拟'
+      }
+    };
+
+    const baseTranslations = {
+      appTitle: 'BRICS Health Digital Twin Demo', brand: 'BRICS Care', navOverview: 'Overview', navClinical: 'Clinical', navLogistics: 'Logistics', navForecast: 'Forecast', navAlerts: 'Alerts',
+      heroEyebrow: 'BRICS Regional Health Command', heroHeadline: 'Predict shortages before they reach the ward', regionalRisk: 'Regional risk', riskLevel: 'Moderate', dispatchPlan: 'Dispatch plan', dispatchValue: '2 ambulances', icuSignal: 'ICU signal', dispatchAction: 'Dispatch', forecastAction: 'Forecast', escalateAction: 'Escalate',
+      aiAssistantLive: 'AI Assistant • Live', recommendedNextMove: 'Recommended next move', aiRecommendation: 'Reallocate 300 units of medicine from a low-risk center and pre-position an ICU-ready ambulance corridor toward Punjab.', shortageRisk: 'Shortage risk', ambulanceRoute: 'Ambulance route', supplyTransfer: 'Supply transfer', aiReasoning: 'AI reasoning', aiCopilotActive: 'AI Copilot • Active', whatNext: 'What should I do next?', routeIntelligence: 'Route intelligence',
+      regionalSignal: 'Regional signal', priorityTriage: 'Priority triage', alertsTitle: 'Alerts', simTitle: 'What-if simulator', northCorridor: 'North corridor', priorityOne: 'Priority 1', northCorridorText: 'Punjab and Haryana demand spike remains elevated.',
+      runLiveSimulation: 'Run live simulation', requestAmbulance: 'Request ambulance', confidence: 'Confidence', impact: 'Impact', highImpact: 'High', chatUserMessage: '"We may face a medicine shortage in Punjab in 6 hours."', chatAiMessage: 'I recommend moving 300 units from BRICS City and activating a priority ambulance corridor.',
+      reallocateAction: 'Reallocate', routeAction: 'Route', prioritizeAction: 'Prioritize', ambulanceEta: 'Ambulance ETA', priorityCorridor: 'Priority corridor', riskReduction: 'Risk reduction', demandLabel: 'Demand', shortageLift: 'Shortage lift', supplyEta: 'Supply ETA',
+      watchlistTitle: 'Regional watchlist', forecastTile: 'Forecast', forecastTileText: 'Predict demand shifts 72h ahead', alertsTile: 'Alerts', alertsTileText: 'Detect shortages before they hit wards', dispatchTile: 'Dispatch', dispatchTileText: 'Route ambulances to highest-risk sites', actionTile: 'Action', actionTileText: 'Trigger resource reallocation instantly',
+      operationsBoard: 'Operations board', dispatchQueueTitle: 'Dispatch queue', fieldStatusTitle: 'Field status', resourceReadinessTitle: 'Resource readiness', facilityWatchTitle: 'Facility watch', recommendedActionsTitle: 'Recommended actions',
+      stable: 'Stable', healthy: 'Healthy', available: 'Available', normal: 'Normal', moderate: 'Moderate risk', critical: 'Critical risk', alert: 'Alert', emergency: 'Emergency', ambulanceAssigned: 'Ambulance assigned to', shortage: 'Shortage risk', recommend: 'Recommended action',
+      action1: 'Move 300 units of medicine from a surplus center.', action2: 'Reassign two nurses to high-risk triage.', action3: 'Stage extra ICU beds near the emergency corridor.', medicine: 'Medicine stock', beds: 'Beds', doctors: 'Doctors', patients: 'Patients/day', facilityWatch: 'Facility watch', recommendations: 'Recommended actions',
+      shortStatus: 'Shortage risk', bedPressureStatus: 'Bed pressure', stableStatus: 'Stable', priorityStatus: 'Priority', liveTag: 'Live', onTag: 'On', highDemand: 'High demand', shortageWindow: '6h shortage window', coldChain: 'Cold chain', stableTransport: 'Stable transport', insulinSafe: 'insulin safe',
+      scenarioHigh: 'High-risk scenario: ICU and medicine routing should be activated immediately.', scenarioModerate: 'Moderate scenario: move resources toward the largest patient cluster.', scenarioLow: 'Low-risk scenario: maintain current scheduling and monitor the next 2 hours.', facilityReady: 'Ready for rural outreach', inventoryTransfer: 'Insulin transfer approved', nursesAvailable: 'Nurses available', ICUBedsReserved: 'ICU beds reserved', inventoryWindow: 'Inventory transfer window', liveRefresh: 'Demo mode • 30s live refresh simulation • no backend dependency',
+      sideTag: 'Local', activeView: 'Active view', systemReady: 'System ready',
+      opsItem1: 'Punjab logistics signal: medicine replenishment due in 2.4 hours.', opsItem2: 'Haryana triage team load is 83% of daytime capacity.', opsItem3: 'BRICS City ICU intake forecast remains elevated after 18:00.', opsItem4: 'Cape Town cold-chain inventory remains within threshold.',
+      priorityItem1Title: 'Triage escalation', priorityItem1Detail: 'Punjab district requires 3 additional nurses', priorityItem2Title: 'Oxygen capacity', priorityItem2Detail: 'Haryana storage is holding at 74%', priorityItem3Title: 'Transport hold', priorityItem3Detail: 'Ambulance routing cleared for BRICS City',
+      dispatchItem1Title: 'Ambulance 12', dispatchItem1Detail: 'Assigned to Punjab Health Centre', dispatchItem2Title: 'Mobile clinic 3', dispatchItem2Detail: 'Routes toward Haryana corridor', dispatchItem3Title: 'Supply convoy', dispatchItem3Detail: 'Medicine transfer approved for BRICS City',
+      liveSimulationUpdated: 'Live simulation updated. Check for shortage risk at'
+    };
+
+    const localeFallbacks = {
+      ta: 'hi', te: 'hi', ml: 'hi', mr: 'hi', gu: 'hi', kn: 'hi', or: 'hi', pa: 'hi', as: 'hi', ur: 'hi', ne: 'hi', sa: 'hi',
+      ks: 'hi', kok: 'hi', mni: 'hi', bo: 'hi', doi: 'hi', mai: 'hi', sd: 'hi', sat: 'hi',
+      es: 'pt', fr: 'pt', de: 'pt', ar: 'ru', sw: 'en', af: 'en'
+    };
+
+    Object.keys(localeFallbacks).forEach(function(lang) {
+      if (!translations[lang]) {
+        const baseLang = localeFallbacks[lang] || 'en';
+        translations[lang] = JSON.parse(JSON.stringify(translations[baseLang] || translations.en));
+      }
+    });
+
+    Object.keys(translations).forEach(function(lang) {
+      translations[lang] = Object.assign({}, baseTranslations, translations[lang]);
+    });
+
+    function applyUiTranslations() {
+      const langText = translations[state.lang] || translations.en;
+      document.querySelectorAll('[data-i18n]').forEach(function(element) {
+        const key = element.dataset.i18n;
+        const value = langText[key] || translations.en[key];
+        if (value) {
+          element.textContent = value;
+        }
+      });
+    }
+
+    const select = document.getElementById('langSelect');
+    select.innerHTML = langOptions.map(option => '<option value="' + option.value + '">' + option.label + '</option>').join('');
+    select.value = 'en';
+
+    const state = {
+      lang: 'en',
+      alerts: [
+        'Medicine stock is trending down in Punjab.',
+        'High-risk infection cluster in Haryana.',
+        'Two ICU beds are under maintenance in BRICS City.'
+      ]
+    };
+
+    const centers = [
+      { id: 'hc-1', name: 'Punjab Health Centre', country: 'IN', medicine: 1000, beds: 12, doctors: 4, patients: 80 },
+      { id: 'hc-2', name: 'Haryana Health Centre', country: 'IN', medicine: 5000, beds: 24, doctors: 9, patients: 60 },
+      { id: 'hc-3', name: 'BRICS City Centre', country: 'BR', medicine: 3600, beds: 18, doctors: 6, patients: 52 },
+      { id: 'hc-4', name: 'Cape Town Clinic', country: 'ZA', medicine: 2200, beds: 10, doctors: 5, patients: 44 },
+      { id: 'hc-5', name: 'Beijing Emergency Wing', country: 'CN', medicine: 4200, beds: 21, doctors: 7, patients: 70 }
+    ];
+
+    function t(key) {
+      return (translations[state.lang] && translations[state.lang][key]) || (translations.en && translations.en[key]) || key;
+    }
+
+    function getSummary() {
+      return {
+        totalMedicine: centers.reduce((sum, center) => sum + center.medicine, 0),
+        totalBeds: centers.reduce((sum, center) => sum + center.beds, 0),
+        totalDoctors: centers.reduce((sum, center) => sum + center.doctors, 0),
+        totalPatients: centers.reduce((sum, center) => sum + center.patients, 0)
+      };
+    }
+
+    function renderSummary() {
+      const summary = getSummary();
+      document.getElementById('medicineKpi').textContent = summary.totalMedicine;
+      document.getElementById('bedsKpi').textContent = summary.totalBeds;
+      document.getElementById('doctorsKpi').textContent = summary.totalDoctors;
+      document.getElementById('patientsKpi').textContent = summary.totalPatients;
+
+      const medicineBadge = document.getElementById('medicineBadge');
+      medicineBadge.textContent = summary.totalMedicine < 9000 ? t('moderate') : t('stable');
+      medicineBadge.className = 'badge ' + (summary.totalMedicine < 9000 ? 'warn' : '');
+
+      const bedsBadge = document.getElementById('bedsBadge');
+      bedsBadge.textContent = summary.totalBeds < 60 ? t('alert') : t('healthy');
+      bedsBadge.className = 'badge ' + (summary.totalBeds < 60 ? 'warn' : '');
+
+      const doctorsBadge = document.getElementById('doctorsBadge');
+      doctorsBadge.textContent = summary.totalDoctors > 20 ? t('available') : t('moderate');
+      doctorsBadge.className = 'badge ' + (summary.totalDoctors > 20 ? '' : 'warn');
+
+      const patientsBadge = document.getElementById('patientsBadge');
+      patientsBadge.textContent = summary.totalPatients > 250 ? t('critical') : t('normal');
+      patientsBadge.className = 'badge ' + (summary.totalPatients > 250 ? 'danger' : '');
+    }
+
+    function renderFacilities() {
+      const list = document.getElementById('facilityList');
+      list.innerHTML = centers.map(function(center) {
+        const risk = center.medicine < 1500 || center.beds < 12 ? 'warn' : '';
+        const status = center.medicine < 1500 ? t('shortStatus') : center.beds < 12 ? t('bedPressureStatus') : t('stableStatus');
+        return '<div class="facility-item"><div class="status-row"><strong>' + center.name + '</strong><span class="badge ' + risk + '">' + status + '</span></div><div class="small">' + center.country + ' • ' + center.doctors + ' ' + t('doctors') + ' • ' + center.beds + ' ' + t('beds') + '</div><div class="small">' + t('medicine') + ': ' + center.medicine + ' • ' + t('patients') + ': ' + center.patients + '</div></div>';
+      }).join('');
+    }
+
+    function renderRecommendations() {
+      const list = document.getElementById('recommendList');
+      list.innerHTML = [
+        '<div class="recommend-item"><strong>' + t('recommend') + '</strong><div>' + t('action1') + '</div></div>',
+        '<div class="recommend-item"><strong>' + t('recommend') + '</strong><div>' + t('action2') + '</div></div>',
+        '<div class="recommend-item"><strong>' + t('recommend') + '</strong><div>' + t('action3') + '</div></div>'
+      ].join('');
+    }
+
+    function renderAlerts() {
+      const list = document.getElementById('alertList');
+      list.innerHTML = state.alerts.map(function(alert) {
+        return '<div class="alert-item"><div class="status-row"><strong>' + t('alert') + '</strong><span class="badge warn">' + t('emergency') + '</span></div><div>' + alert + '</div></div>';
+      }).join('');
+    }
+
+    function renderOpsFeed() {
+      const feed = document.getElementById('opsFeed');
+      const items = [
+        { key: 'opsItem1' },
+        { key: 'opsItem2' },
+        { key: 'opsItem3' },
+        { key: 'opsItem4' }
+      ];
+      feed.innerHTML = items.map(function(item) {
+        return '<div class="facility-item"><div class="status-row"><strong>' + t('liveTag') + '</strong><span class="badge">' + t('onTag') + '</span></div><div class="small">' + t(item.key) + '</div></div>';
+      }).join('');
+    }
+
+    function renderPriorityFeed() {
+      const feed = document.getElementById('priorityFeed');
+      const items = [
+        { titleKey: 'priorityItem1Title', detailKey: 'priorityItem1Detail' },
+        { titleKey: 'priorityItem2Title', detailKey: 'priorityItem2Detail' },
+        { titleKey: 'priorityItem3Title', detailKey: 'priorityItem3Detail' }
+      ];
+      feed.innerHTML = items.map(function(item) {
+        return '<div class="facility-item"><div class="status-row"><strong>' + t(item.titleKey) + '</strong><span class="badge warn">' + t('priorityStatus') + '</span></div><div class="small">' + t(item.detailKey) + '</div></div>';
+      }).join('');
+    }
+
+    function renderDispatchQueue() {
+      const queue = document.getElementById('dispatchQueue');
+      const items = [
+        { titleKey: 'dispatchItem1Title', detailKey: 'dispatchItem1Detail' },
+        { titleKey: 'dispatchItem2Title', detailKey: 'dispatchItem2Detail' },
+        { titleKey: 'dispatchItem3Title', detailKey: 'dispatchItem3Detail' }
+      ];
+      queue.innerHTML = items.map(function(item) {
+        return '<div class="recommend-item"><strong>' + t(item.titleKey) + '</strong><div class="small">' + t(item.detailKey) + '</div></div>';
+      }).join('');
+    }
+
+    function simulateLiveChanges() {
+      centers.forEach(function(center) {
+        const drift = Math.round((Math.random() - 0.45) * 120);
+        center.medicine = Math.max(500, center.medicine + drift);
+        center.patients = Math.max(15, center.patients + Math.round((Math.random() - 0.5) * 18));
+      });
+
+      renderSummary();
+      renderFacilities();
+      state.alerts.unshift(t('liveSimulationUpdated') + ' ' + centers[0].name + '.');
+      state.alerts = state.alerts.slice(0, 5);
+      renderAlerts();
+    }
+
+    function requestAmbulance() {
+      const nearest = centers.slice().sort(function(a, b) {
+        return a.patients - b.patients;
+      })[0];
+
+      const text = t('ambulanceAssigned') + ' ' + nearest.name;
+      document.getElementById('scenarioOutput').textContent = text;
+      state.alerts.unshift(text);
+      state.alerts = state.alerts.slice(0, 5);
+      renderAlerts();
+    }
+
+    function runScenario() {
+      const flu = Number(document.getElementById('fluSlider').value);
+      const stock = Number(document.getElementById('stockSlider').value);
+      const forecast = flu * 1.2 + stock * 0.8;
+      const message = forecast > 120
+        ? t('scenarioHigh')
+        : forecast > 80
+          ? t('scenarioModerate')
+          : t('scenarioLow');
+
+      document.getElementById('scenarioOutput').textContent = message;
+    }
+
+    document.getElementById('countrySelect').innerHTML = countries.map(function(country) {
+      return '<option value="' + country + '">' + country + '</option>';
+    }).join('');
+
+    function setActiveSection(section) {
+      document.querySelectorAll('.nav-pills span, .side-nav button').forEach(function(item) {
+        item.classList.toggle('active', item.dataset.section === section);
+      });
+
+      document.querySelectorAll('.section-panel').forEach(function(panel) {
+        panel.hidden = panel.dataset.section !== section;
+      });
+
+      const scenarioOutput = document.getElementById('scenarioOutput');
+      if (scenarioOutput) {
+        scenarioOutput.textContent = t('activeView') + ': ' + section + '. ' + t('systemReady');
+      }
+    }
+
+    document.getElementById('langSelect').addEventListener('change', function(event) {
+      state.lang = event.target.value;
+      applyUiTranslations();
+      renderRecommendations();
+      renderAlerts();
+      renderFacilities();
+      renderSummary();
+    });
+
+    document.querySelectorAll('.nav-pills span, .side-nav button').forEach(function(button) {
+      button.addEventListener('click', function() {
+        const section = this.dataset.section || this.textContent.trim();
+        setActiveSection(section);
+      });
+    });
+
+    setActiveSection('Overview');
+
+    document.getElementById('simulateBtn').addEventListener('click', simulateLiveChanges);
+    document.getElementById('ambulanceBtn').addEventListener('click', requestAmbulance);
+    document.getElementById('runScenarioBtn').addEventListener('click', runScenario);
+
+    applyUiTranslations();
+    renderSummary();
+    renderFacilities();
+    renderRecommendations();
+    renderAlerts();
+    renderOpsFeed();
+    renderPriorityFeed();
+    renderDispatchQueue();
+    setInterval(simulateLiveChanges, 30000);
+  </script>
+</body>
+</html>

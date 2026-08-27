@@ -1,0 +1,36 @@
+{
+  "languages": [
+    { "code": "en", "name": "English", "country": "GLOBAL" },
+    { "code": "hi", "name": "Hindi", "country": "IN" },
+    { "code": "bn", "name": "Bengali", "country": "IN" },
+    { "code": "te", "name": "Telugu", "country": "IN" },
+    { "code": "mr", "name": "Marathi", "country": "IN" },
+    { "code": "ta", "name": "Tamil", "country": "IN" },
+    { "code": "ur", "name": "Urdu", "country": "IN" },
+    { "code": "gu", "name": "Gujarati", "country": "IN" },
+    { "code": "kn", "name": "Kannada", "country": "IN" },
+    { "code": "or", "name": "Odia", "country": "IN" },
+    { "code": "ml", "name": "Malayalam", "country": "IN" },
+    { "code": "pa", "name": "Punjabi", "country": "IN" },
+    { "code": "as", "name": "Assamese", "country": "IN" },
+    { "code": "mai", "name": "Maithili", "country": "IN" },
+    { "code": "btx", "name": "Bodo", "country": "IN" },
+    { "code": "doi", "name": "Dogri", "country": "IN" },
+    { "code": "ks", "name": "Kashmiri", "country": "IN" },
+    { "code": "kok", "name": "Konkani", "country": "IN" },
+    { "code": "mni", "name": "Manipuri (Meitei)", "country": "IN" },
+    { "code": "ne", "name": "Nepali", "country": "IN" },
+    { "code": "sa", "name": "Sanskrit", "country": "IN" },
+    { "code": "sat", "name": "Santali", "country": "IN" },
+
+    { "code": "zh", "name": "Mandarin (中文)", "country": "CN" },
+    { "code": "yue", "name": "Cantonese (粵語)", "country": "CN" },
+
+    { "code": "pt-BR", "name": "Portuguese (Brazil)", "country": "BR" },
+    { "code": "ru", "name": "Russian", "country": "RU" },
+
+    { "code": "af", "name": "Afrikaans", "country": "ZA" },
+    { "code": "xh", "name": "Xhosa", "country": "ZA" },
+    { "code": "zu", "name": "Zulu", "country": "ZA" }
+  ]
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Inventory & Orders</title>
+  <style>body{font-family:Arial;padding:12px} .center{border:1px solid #ccc;padding:8px;margin:8px 0}</style>
+</head>
+<body>
+  <h1>Admin — Inventory</h1>
+  <div>
+    <label>Country: <select id="loginCountry"><option>IN</option><option>BR</option><option>CN</option><option>RU</option><option>ZA</option></select></label>
+    <label>ID: <input id="loginId" /></label>
+    <button id="loginBtn">Login</button>
+    <span id="who"></span>
+    <a href="/logs.html" style="margin-left:12px">View Auth Logs</a>
+    <a href="/reports.html" style="margin-left:12px">View Reports</a>
+  </div>
+  <div id="list"></div>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

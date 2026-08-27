@@ -1,0 +1,26 @@
+{
+  "title": "BRICS Health Digital Twin",
+  "nearby": "Nearby Health Centres",
+  "shortage": "SHORTAGE WARNING",
+  "authButton": "Authenticate",
+  "voiceButton": "Voice Report",
+  "uploadPlaceholder": "Upload medical report",
+  "requestAmbulance": "Request Ambulance",
+  "ambulanceAssigned": "Ambulance assigned to",
+  "ambulanceError": "Ambulance request failed",
+  "uploadedReport": "Uploaded report",
+  "authenticated": "Authenticated",
+  "medicine": "Medicine",
+  "beds": "Beds",
+  "doctors": "Doctors",
+  "patientsPerDay": "Patients/day",
+  "days": "days",
+  "shortageWarning": "SHORTAGE WARNING"
+  ,"urgent":"URGENT"
+  ,"menuOverview":"Overview"
+  ,"menuClinical":"Clinical"
+  ,"menuReports":"Reports"
+  ,"menuLogs":"Logs"
+  ,"menuTranscripts":"Transcripts"
+  ,"enableAlarm":"Enable alarm"
+}

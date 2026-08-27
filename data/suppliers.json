@@ -1,0 +1,18 @@
+{
+  "IN": [
+    { "name": "India Pharma Co.", "url": "https://example.com/in/manufacturer/webhook", "secret": "in-secret-abc" },
+    { "name": "India Distributor A", "url": "https://example.com/in/distributorA/webhook", "secret": "in-secret-xyz" }
+  ],
+  "BR": [
+    { "name": "Brasil Med Ltd.", "url": "https://example.com/br/manufacturer/webhook", "secret": "br-secret-123" }
+  ],
+  "CN": [
+    { "name": "China Health Inc.", "url": "https://example.com/cn/manufacturer/webhook", "secret": "cn-secret-123" }
+  ],
+  "RU": [
+    { "name": "Russia Pharma", "url": "https://example.com/ru/manufacturer/webhook", "secret": "ru-secret-123" }
+  ],
+  "ZA": [
+    { "name": "SA Medical Supplies", "url": "https://example.com/za/manufacturer/webhook", "secret": "za-secret-123" }
+  ]
+}

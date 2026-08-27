@@ -1,0 +1,20 @@
+{
+  "name": "brics-health-digital-twin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "start:mock-verifier": "node mock_verifier.js",
+    "transcribe:openai": "node tools/transcribe_openai.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "node-fetch": "^2.6.7",
+    "jsonwebtoken": "^9.0.0",
+    "form-data": "^4.0.0",
+    "@google-cloud/speech": "^5.4.0",
+    "@google-cloud/storage": "^6.10.0"
+  }
+}

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BRICS Health Digital Twin (Starter)</title>
+  <style>
+    body { font-family: Inter, Arial, Helvetica, sans-serif; margin: 0; padding: 0; color:#222; }
+    header { background: linear-gradient(90deg,#0b6,#068); color: #fff; padding: 12px 16px; }
+    .layout { display:flex; min-height: calc(100vh - 56px); }
+    aside.sidebar { width: 220px; background: #f7fafc; padding: 18px; box-shadow: 1px 0 0 rgba(0,0,0,0.04); }
+    aside.sidebar h2{margin:0 0 12px 0;font-size:16px}
+    aside.sidebar nav a{display:block;padding:8px 10px;margin:6px 0;border-radius:6px;color:#0b3;text-decoration:none}
+    aside.sidebar nav a:hover{background:#eef6f2}
+    main { flex:1; padding: 20px; }
+    .center { border: 1px solid #eee; padding: 12px; margin-bottom: 12px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(16,24,40,0.03); }
+    .alert { color: #700; background:#fff0f0; border-left:4px solid #d00; padding:6px 8px; border-radius:4px; display:inline-block; font-weight:700; }
+    .alert.urgent{ color:#fff; background:#d00; border-left-color:#b00; padding:6px 10px }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center }
+    .small { font-size:13px; color:#666 }
+    @media (max-width:900px){ .layout{flex-direction:column} aside.sidebar{width:100%} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title">BRICS Health Digital Twin</h1>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Navigation</h2>
+      <nav>
+        <a href="#" data-section="overview" id="navOverview">Overview</a>
+        <a href="#" data-section="clinical" id="navClinical">Clinical</a>
+        <a href="#" data-section="reports" id="navReports">Reports</a>
+        <a href="#" data-section="logs" id="navLogs">Logs</a>
+        <a href="#" data-section="transcripts" id="navTranscripts">Transcripts</a>
+      </nav>
+      <hr />
+      <div style="margin-top:8px">
+        <label class="small"><input type="checkbox" id="alarmToggle" /> <span id="enableAlarmLabel">Enable alarm</span></label>
+      </div>
+    </aside>
+
+    <main>
+      <div class="controls">
+        <select id="countrySelect"></select>
+        <select id="langSelect"></select>
+        <input id="idInput" placeholder="Enter national ID / license" />
+        <button id="authBtn">Authenticate</button>
+        <button id="voiceBtn">Voice Report (client STT)</button>
+        <button id="recordServerBtn">Record & Transcribe (server STT)</button>
+        <input id="fileUpload" type="file" />
+      </div>
+
+      <section id="section-overview">
+        <h2 id="nearbyTitle">Nearby Health Centres</h2>
+        <div id="centers"></div>
+      </section>
+
+      <section id="section-clinical" style="display:none">
+        <h2>Clinical</h2>
+        <div id="clinicalContent">Clinical overview will appear here.</div>
+      </section>
+
+      <section id="section-reports" style="display:none">
+        <h2>Reports</h2>
+        <div id="searchResults"></div>
+      </section>
+
+      <section id="section-logs" style="display:none">
+        <h2>Logs</h2>
+        <div id="logsContent">Logs will appear here.</div>
+      </section>
+
+      <section id="section-transcripts" style="display:none">
+        <h2>Transcripts</h2>
+        <div id="transcriptsContent">Transcripts will appear here.</div>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Simulate Ambulance Request</h3>
+        <button id="ambBtn">Request Ambulance at my location</button>
+      </section>
+
+      <footer style="margin-top:24px;font-size:12px;color:#666">Auto-refresh every 30s • Demo starter</footer>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/i18next@23.0.1/dist/umd/i18next.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

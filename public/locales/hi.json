@@ -1,0 +1,26 @@
+{
+  "title": "BRICS स्वास्थ्य डिजिटल ट्विन",
+  "nearby": "नजदीकी स्वास्थ्य केंद्र",
+  "shortage": "स्टॉक चेतावनी",
+  "authButton": "प्रमाणीकृत करें",
+  "voiceButton": "वॉइस रिपोर्ट",
+  "uploadPlaceholder": "चिकित्सा रिपोर्ट अपलोड करें",
+  "requestAmbulance": "एम्बुलेंस का अनुरोध करें",
+  "ambulanceAssigned": "एम्बुलेंस असाइन किया गया",
+  "ambulanceError": "एम्बुलेंस अनुरोध विफल",
+  "uploadedReport": "रिपोर्ट अपलोड की गई",
+  "authenticated": "प्रमाणीकृत",
+  "medicine": "दवाइयाँ",
+  "beds": "बेड",
+  "doctors": "डॉक्टर",
+  "patientsPerDay": "रोजाना मरीज",
+  "days": "दिन",
+  "shortageWarning": "स्टॉक चेतावनी"
+  ,"urgent":"आपातकालीन"
+  ,"menuOverview":"ओवरव्यू"
+  ,"menuClinical":"क्लिनिकल"
+  ,"menuReports":"रिपोर्ट्स"
+  ,"menuLogs":"लॉग्स"
+  ,"menuTranscripts":"प्रतिलेख"
+  ,"enableAlarm":"अलार्म सक्षम करें"
+}
